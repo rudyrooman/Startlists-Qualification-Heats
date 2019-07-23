@@ -1,6 +1,7 @@
 # Startlists-Qualification-Heats
 
-Target: Create balanced qualification heats for WOC and World Cups
+Target: 
+Create balanced qualification heats for WOC and World Cups.
 
 Requirements:
 1. Balance number of runners per heat
@@ -11,4 +12,5 @@ Requirements:
 6. Ensure randomness. 
 
 Solution:
-World Ranking is used to rank athletes. Rank 1,2,3 are allocated to different heats. ( and this is repeated for rank 4,5,6,...)
+World Ranking is used to rank athletes. 
+Rank 1,2,3 are allocated to different heats. ( and this is repeated for rank 4,5,6,...)
