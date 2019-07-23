@@ -260,3 +260,37 @@ elapsed = timeit.default_timer() - start_time
 
 print()
 print('Calculation time: %s seconds.' % round(elapsed, 3))
+
+
+
+#
+# Verification
+#
+
+dfver = pd.DataFrame([vars(r) for r in runners])
+#print("Number of runners per federation")
+#print(dfver.groupby('FED').count()[['ID']])
+
+print("******************")
+print("Number of runners per federation & heat")
+print(dfver.groupby(['FED','Heat']).count()[['ID']])
+
+
+print("******************")
+print("Number of runners per federation & heat - min, max and diff")
+
+runnersperheat = dfver.groupby(['FED','Heat']).count()[['ID']]
+
+t = runnersperheat.assign(ID=runnersperheat.ID.abs())\
+    .groupby('FED')\
+    .ID.agg([('Min','min'),('Max','max')])\
+    .add_prefix('Count')
+
+t['Diff'] = t.apply ( lambda row: row.CountMax-row.CountMin, axis=1)
+print(t)
+
+
+print("******************")
+print("Average ranking points")
+rp = dfver.groupby('Heat').mean()[['RankingPoints']]
+print (rp)
