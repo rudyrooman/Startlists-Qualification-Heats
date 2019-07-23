@@ -8,6 +8,7 @@ Requirements:
 3. Equal strength of qualification heats. 
 4. 2 runners from 1 country in 1 heat should not start after each other
 5. Respect as much as possible startgroup requests.
+6. Ensure randomness. 
 
 Solution:
 World Ranking is used to rank athletes. Rank 1,2,3 are allocated to different heats. ( and this is repeated for rank 4,5,6,...)
