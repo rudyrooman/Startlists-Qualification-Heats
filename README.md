@@ -25,3 +25,5 @@ Usage:
 Update entries.xlsx
 Run the script
 Output: starlists.xlsx
+
+For sharing to clubs compile with Pyinstaller.
