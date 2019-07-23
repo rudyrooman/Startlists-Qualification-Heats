@@ -7,7 +7,7 @@ Requirements:
 1. Balance number of runners per heat
 2. Balance number of runners from one country to 1 heat.
 3. Equal strength of qualification heats. 
-4. 2 runners from 1 country in 1 heat should not start after each other
+4. Two runners from same country in 1 heat should not start after each other.
 5. Respect as much as possible startgroup requests.
 6. Ensure randomness. 
 
