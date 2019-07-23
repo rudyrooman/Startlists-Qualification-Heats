@@ -16,9 +16,10 @@ Requirements:
 
 Solution:
 World Ranking is used to rank athletes. 
-Rank 1,2,3 are allocated to different heats. 
-( and this is repeated for rank 4,5,6,...)
-Google OR Tools are used to solve.
+Rank 1,2,3 are allocated to different heats.
+Repeat for rank 4,5,6,...7,8,9,...
+Google OR Tools solver is used to find solution that meets all constraints.
+Randomness is ensured by fixing random runners to heat 1,2,3.
 
 Usage:
 Update entries.xlsx
