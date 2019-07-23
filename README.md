@@ -13,4 +13,5 @@ Requirements:
 
 Solution:
 World Ranking is used to rank athletes. 
-Rank 1,2,3 are allocated to different heats. ( and this is repeated for rank 4,5,6,...)
+Rank 1,2,3 are allocated to different heats. 
+( and this is repeated for rank 4,5,6,...)
