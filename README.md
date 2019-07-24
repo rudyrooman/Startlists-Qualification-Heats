@@ -24,6 +24,6 @@ Randomness is ensured by fixing random runners to heat 1,2,3.
 Usage:
 Update entries.xlsx
 Run the script
-Output: starlists.xlsx
+Output: startlists.xlsx
 
-For sharing to clubs compile with Pyinstaller.
+For organisers: compile to *.exe with Pyinstaller.
