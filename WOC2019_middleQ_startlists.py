@@ -69,6 +69,15 @@ def find_heats_time(_runners, _heats, _nations, _z):
             if _r.Rank == rank:
                 print('%s to heat %i.' % (_r, 1+random_runners.index(rank)))
 
+    # count runners per starting block
+    starting_blocks = []
+    for sb in range(4):
+        starting_blocks.append(len([_r for _r in runners if _r.StartGrp == sb]))
+    # add runners without startblock preference to startgroup with least athlets
+    index = starting_blocks.index(min(starting_blocks[1:]))
+    starting_blocks[index] += starting_blocks[0]
+    starting_blocks = starting_blocks[1:]
+
     # [ START create variables ]
     match = {}
     for _r in _runners:
@@ -123,12 +132,11 @@ def find_heats_time(_runners, _heats, _nations, _z):
         if _r.StartGrp > 1:
             solver.Add(solver.Sum([match[_r, _h, _t] * _t for _h in range(1, _heats + 1)
                                    for _t in range(runners_per_heat[_h-1])]) >=
-                       ((len(_runners) // (_heats*3)) * (_r.StartGrp - 1) - _z))
-
-        elif _r.StartGrp == 1:
+                       ((sum(starting_blocks[0:_r.StartGrp-1]) - 1) // _heats - _z))
+        if _r.StartGrp < _heats:
             solver.Add(solver.Sum([match[_r, _h, _t] * _t for _h in range(1, _heats + 1)
                                    for _t in range(runners_per_heat[_h - 1])]) <=
-                       ((len(_runners) // (_heats * 3)) + 2 + _z))
+                       ((sum(starting_blocks[0:_r.StartGrp]) - 1) // _heats + _z))
 
     # fix random runners to specific heats and time
     for _h in range(1, _heats + 1):
@@ -165,10 +173,12 @@ def find_heats_time(_runners, _heats, _nations, _z):
 
 
 # ###program starts here### #
+"""
 if datetime.date.today() > datetime.date(2019, 9, 1):
     print()
     print('This prototype is expired. Please contact rudy.rooman@gmail.com for more info.')
     exit()
+"""
 
 heats = 3
 
