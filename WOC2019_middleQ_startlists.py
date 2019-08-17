@@ -50,8 +50,7 @@ def find_heats_time(_runners, _heats, _nations, _z):
     # define runners per heat
     base = len(_runners) // _heats
     runners_per_heat = [base for _h in range(1, _heats + 1)]
-    getal = len(_runners) - base * _heats
-    for c in range(getal):
+    for c in range(len(_runners) - base * _heats):
         runners_per_heat[c] += 1
     print('runners per heat: %s' % runners_per_heat)
     print()
