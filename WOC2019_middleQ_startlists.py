@@ -49,15 +49,21 @@ def find_heats_time(_runners, _heats, _nations, _z):
     
     # define runners per heat
     base = len(_runners) // _heats
-    getal = len(_runners)
-    runners_per_heat = []
-    for _h in range(1, _heats + 1):
-        if getal > base * _heats:
-            runners_per_heat.append(base + 1)
-        else:
-            runners_per_heat.append(base)
-        getal -= 1
+    runners_per_heat = [base for _h in range(1, _heats + 1)]
+    getal = len(_runners) - base * _heats
+    for c in range(getal):
+        runners_per_heat[c] += 1
     print('runners per heat: %s' % runners_per_heat)
+    print()
+
+    # startingblocks given by teammanagers ( 0 = no preference, 1 = early, 2 mid section, 3 =late)
+    # count runners per starting block
+    starting_blocks = [len([_r for _r in runners if _r.StartGrp == sb]) for sb in range(4)]
+    # add runners without startblock preference to startgroup with least athletes
+    index = starting_blocks.index(min(starting_blocks[1:]))
+    starting_blocks[index] += starting_blocks[0]
+    starting_blocks = starting_blocks[1:]
+    print('runners per starting block: %s' % starting_blocks)
     print()
 
     # define random runners to be fixed to heats
@@ -67,14 +73,6 @@ def find_heats_time(_runners, _heats, _nations, _z):
         for _r in runners:
             if _r.Rank == rank:
                 print('%s to heat %i.' % (_r, 1+random_runners.index(rank)))
-
-    # startingblocks given by teammanagers ( 0 = no preference, 1 = early, 2 mid section, 3 =late)
-    # count runners per starting block
-    starting_blocks = [len([_r for _r in runners if _r.StartGrp == sb]) for sb in range(4)]
-    # add runners without startblock preference to startgroup with least athletes
-    index = starting_blocks.index(min(starting_blocks[1:]))
-    starting_blocks[index] += starting_blocks[0]
-    starting_blocks = starting_blocks[1:]
 
     # [ START create variables ]
     match = {}
