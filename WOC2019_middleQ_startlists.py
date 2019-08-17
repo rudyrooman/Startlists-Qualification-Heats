@@ -70,9 +70,7 @@ def find_heats_time(_runners, _heats, _nations, _z):
 
     # startingblocks given by teammanagers ( 0 = no preference, 1 = early, 2 mid section, 3 =late)
     # count runners per starting block
-    starting_blocks = []
-    for sb in range(4):
-        starting_blocks.append(len([_r for _r in runners if _r.StartGrp == sb]))
+    starting_blocks = [len([_r for _r in runners if _r.StartGrp == sb]) for sb in range(4)]
     # add runners without startblock preference to startgroup with least athletes
     index = starting_blocks.index(min(starting_blocks[1:]))
     starting_blocks[index] += starting_blocks[0]
