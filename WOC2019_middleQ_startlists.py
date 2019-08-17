@@ -89,12 +89,12 @@ def find_heats_time(_runners, _heats, _nations, _z):
 
     # [ START Constraints ]
 
-    # Each runner is assigned to exact 1 heat / time
+    # Each runner is assigned to exactly 1 heat / time combination
     for _r in _runners:
         solver.Add(solver.Sum([match[_r, _h, _t] for _h in range(1, _heats + 1)
                                for _t in range(runners_per_heat[_h-1])]) == 1)
 
-    # each time assigned per heat assigned to 1 runner
+    # each heat / time combination is assigned to exactly 1 runner
     for _h in range(1, _heats + 1):
         for _t in range(runners_per_heat[_h-1]):
             solver.Add(solver.Sum([match[_r, _h, _t] for _r in _runners]) == 1)
@@ -107,7 +107,7 @@ def find_heats_time(_runners, _heats, _nations, _z):
             solver.Add(solver.Sum([match[_r, _h, _t] for _t in range(runners_per_heat[_h-1]) for _r in _runners if _r.FED == _n.FED])
                        >= (_n.count // _heats))
 
-    # spreading runners 1,2,3 over differnt heats
+    # spreading runners 1,2,3 over different heats
     for _r1 in runners:
         if (_r1.Rank % _heats) == 1:
             for _r2 in runners:
