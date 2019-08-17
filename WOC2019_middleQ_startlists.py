@@ -69,6 +69,7 @@ def find_heats_time(_runners, _heats, _nations, _z):
             if _r.Rank == rank:
                 print('%s to heat %i.' % (_r, 1+random_runners.index(rank)))
 
+    # use startingblocks given by teammanagers ( 0 = no preference, 1 = early, 2 mid section, 3 =late)
     # count runners per starting block
     starting_blocks = []
     for sb in range(4):
@@ -126,8 +127,8 @@ def find_heats_time(_runners, _heats, _nations, _z):
                     for _t in range(runners_per_heat[_h - 1] - 1):
                         solver.Add(match[_r1, _h, _t] + match[_r2, _h, _t+1] <= 1)
 
-    # use startingblocks given by teammanagers ( 0 = no preference, 1 = early, 2 mid section, 3 =late)
-    # to ensure solveability a paramater _z is used
+    # comply with startgroup requests
+    # a parameter _z for relaxation is available but not used
     for _r in _runners:
         if _r.StartGrp > 1:
             solver.Add(solver.Sum([match[_r, _h, _t] * _t for _h in range(1, _heats + 1)
@@ -173,13 +174,6 @@ def find_heats_time(_runners, _heats, _nations, _z):
 
 
 # ###program starts here### #
-"""
-if datetime.date.today() > datetime.date(2019, 9, 1):
-    print()
-    print('This prototype is expired. Please contact rudy.rooman@gmail.com for more info.')
-    exit()
-"""
-
 heats = 3
 
 # list of instances
