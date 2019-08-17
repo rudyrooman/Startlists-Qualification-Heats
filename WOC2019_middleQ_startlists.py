@@ -46,8 +46,7 @@ class Nation:
 
 def find_heats_time(_runners, _heats, _nations, _z):
     solver = pywraplp.Solver('SolveAssignmentProblemMIP', pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
-    # solver = pywraplp.Solver('SolveAssignmentProblemLP', pywraplp.Solver.GLOP_LINEAR_PROGRAMMING)
-
+    
     # define runners per heat
     base = len(_runners) // _heats
     getal = len(_runners)
@@ -69,12 +68,12 @@ def find_heats_time(_runners, _heats, _nations, _z):
             if _r.Rank == rank:
                 print('%s to heat %i.' % (_r, 1+random_runners.index(rank)))
 
-    # use startingblocks given by teammanagers ( 0 = no preference, 1 = early, 2 mid section, 3 =late)
+    # startingblocks given by teammanagers ( 0 = no preference, 1 = early, 2 mid section, 3 =late)
     # count runners per starting block
     starting_blocks = []
     for sb in range(4):
         starting_blocks.append(len([_r for _r in runners if _r.StartGrp == sb]))
-    # add runners without startblock preference to startgroup with least athlets
+    # add runners without startblock preference to startgroup with least athletes
     index = starting_blocks.index(min(starting_blocks[1:]))
     starting_blocks[index] += starting_blocks[0]
     starting_blocks = starting_blocks[1:]
@@ -108,7 +107,7 @@ def find_heats_time(_runners, _heats, _nations, _z):
             solver.Add(solver.Sum([match[_r, _h, _t] for _t in range(runners_per_heat[_h-1]) for _r in _runners if _r.FED == _n.FED])
                        >= (_n.count // _heats))
 
-    # spreading over runners 1,2,3 over a differnt heat
+    # spreading runners 1,2,3 over differnt heats
     for _r1 in runners:
         if (_r1.Rank % _heats) == 1:
             for _r2 in runners:
