@@ -11,7 +11,7 @@ Requirements:
 2. Balance runners from one country per heat.
 3. Equal strength of heats. 
 4. Runners from same country in a heat should not start after each other.
-5. Respect as much as possible startgroup requests.
+5. Respect startgroup requests.
 6. Ensure randomness. 
 
 Solution:
