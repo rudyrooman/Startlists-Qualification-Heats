@@ -128,7 +128,7 @@ def find_heats_time(_runners, _heats, _nations, _z):
             solver.Add(solver.Sum([match[_r, _h, _t] * _t for _h in range(1, _heats + 1)
                                    for _t in range(runners_per_heat[_h-1])]) >=
                        ((sum(starting_blocks[0:_r.StartGrp-1]) - 1) // _heats - _z))
-        if _r.StartGrp < _heats:
+        if _r.StartGrp < _heats and _r.StartGrp != 0:
             solver.Add(solver.Sum([match[_r, _h, _t] * _t for _h in range(1, _heats + 1)
                                    for _t in range(runners_per_heat[_h - 1])]) <=
                        ((sum(starting_blocks[0:_r.StartGrp]) - 1) // _heats + _z))
