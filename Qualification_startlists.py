@@ -176,7 +176,7 @@ nations = []
 
 start_time = timeit.default_timer()
 
-# read availability data file to define saturdays and availability per engineer
+# read entries
 wb = op.load_workbook(filename='entries.xlsx')
 sheet1 = wb.active
 
