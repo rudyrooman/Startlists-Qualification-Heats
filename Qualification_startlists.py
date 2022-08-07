@@ -9,9 +9,9 @@ from __future__ import unicode_literals
 from ortools.linear_solver import pywraplp
 import timeit
 import xlsxwriter
-import pandas as pd
-import datetime
 from random import sample
+import pandas as pd
+import openpyxl as op
 
 
 class Runner:
@@ -176,23 +176,21 @@ nations = []
 
 start_time = timeit.default_timer()
 
-# read entered runners data file
-df = pd.ExcelFile('entries.xlsx')
+# read availability data file to define saturdays and availability per engineer
+wb = op.load_workbook(filename='entries.xlsx')
+sheet1 = wb.active
 
-sheet1 = df.parse(0)
-for teller in range(3, len(sheet1)):
+
+# read entered runners data file
+for teller in range(5, sheet1.max_row + 1):
     # read a row
-    row1 = sheet1.iloc[teller].real
-    try:
-        runner = Runner()
-        runner.ID = row1[0]
-        runner.FED = row1[1]
-        runner.Surname = row1[2]
-        runner.Firstname = row1[3]
-        runner.StartGrp = row1[4]
-        runner.RankingPoints = row1[5]
-    except:
-        None
+    runner = Runner()
+    runner.ID = sheet1.cell(row=teller, column=1).value
+    runner.FED = sheet1.cell(row=teller, column=2).value
+    runner.Surname = sheet1.cell(row=teller, column=3).value
+    runner.Firstname = sheet1.cell(row=teller, column=4).value
+    runner.StartGrp = sheet1.cell(row=teller, column=5).value
+    runner.RankingPoints = sheet1.cell(row=teller, column=6).value
 
 # create country instances
 for r in runners:
@@ -260,6 +258,7 @@ print()
 print('Calculation time: %s seconds.' % round(elapsed, 3))
 
 
+exit()
 
 #
 # Verification
