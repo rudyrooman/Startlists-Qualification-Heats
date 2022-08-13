@@ -1,4 +1,5 @@
 # Startlists-Qualification-Heats
+Feel free to contact me via email( in .py file ) for support 
 
 Target: 
 Create balanced qualification heats for orienteering.
