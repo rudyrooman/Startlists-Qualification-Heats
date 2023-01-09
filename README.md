@@ -6,7 +6,6 @@ Create balanced qualification heats for orienteering based on World Ranking
 Application:
 WOC, Worldcup, EOC,....
 
-
 Wat does the script do:
 1. Balance number of runners per heat
 2. Balance number of runners from one country per heat.
