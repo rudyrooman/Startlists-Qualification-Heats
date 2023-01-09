@@ -28,7 +28,7 @@ It is important that your file looks exactly the same as the example
 
 Step 2:
 For organisers with Python knowledge I would suggest to run the Python script.
-Other organisers can use the exe file. 
+Other organisers can use the exe file. Exe file is not available on Github but I can share via WeTransfer.
 In both cases the entries.xlsx file should be in same directory.
 
 Step 3:
@@ -36,5 +36,5 @@ Consult the proposed startlists in startlists.xlsx
 If you would not like the result, just run the program again. ( do not forget to close startlists.xlsx before next attempt) 
 
 Notes: 
-* I compiled to *.exe with Pyinstaller.  pyinstaller 
+* I compiled to *.exe with Pyinstaller.  
 * Do not hesitate to contact me for support. 
