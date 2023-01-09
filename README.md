@@ -16,11 +16,11 @@ Wat does the script do:
 6. Ensure randomness. 
 
 Solution:
-World Ranking is used to rank athletes. 
-Rank 1,2,3 are allocated to different heats.
-Repeat for rank 4,5,6,...7,8,9,...
-Google OR Tools solver is used to find solution that meets all constraints.
-Randomness is ensured by fixing random runners to heat 1,2,3.
+World Ranking is used to rank athletes.   
+Rank 1,2,3 are allocated to different heats.  
+Repeat for rank 4,5,6,...7,8,9,...  
+Google OR Tools solver is used to find solution that meets all constraints.  
+Randomness is ensured by fixing random runners to heat 1,2,3.  
 
 Usage:
 Step 1: Update entries.xlsx  
