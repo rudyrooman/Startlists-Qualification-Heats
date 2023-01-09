@@ -22,7 +22,7 @@ Repeat for rank 4,5,6,...7,8,9,...
 Google OR Tools solver is used to find solution that meets all constraints.  
 Randomness is ensured by fixing random runners to heat 1,2,3.  
 
-Usage:
+Usage:  
 Step 1: Update entries.xlsx  
 It is important that your file looks exactly the same as the example   
 
