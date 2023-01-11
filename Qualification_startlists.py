@@ -4,14 +4,14 @@
 """
 
 # -*- coding: utf-8 -*-
-from __future__ import print_function
+# from __future__ import print_function
 from __future__ import unicode_literals
 from ortools.linear_solver import pywraplp
 import timeit
 import xlsxwriter
 from random import sample
-import pandas as pd
 import openpyxl as op
+import pandas as pd
 
 
 class Runner:
@@ -45,8 +45,9 @@ class Nation:
 
 
 def find_heats_time(_runners, _heats, _nations, _z):
-    solver = pywraplp.Solver('SolveAssignmentProblemMIP', pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
-    
+    #solver = pywraplp.Solver('SolveAssignmentProblemMIP', pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
+    solver = pywraplp.Solver('SolveAssignmentProblemMIP', pywraplp.Solver.SCIP_MIXED_INTEGER_PROGRAMMING)
+
     # define runners per heat
     base = len(_runners) // _heats
     runners_per_heat = [base for _h in range(1, _heats + 1)]
@@ -58,7 +59,7 @@ def find_heats_time(_runners, _heats, _nations, _z):
     # startingblocks given by teammanagers ( 0 = no preference, 1 = early, 2 mid section, 3 =late)
     # count runners per starting block
     starting_blocks = [len([_r for _r in runners if _r.StartGrp == sb]) for sb in range(4)]
-    # add runners without startblock preference to startgroup with least athletes
+    # add runners without startblock preference to startgroup with the least athletes
     index = starting_blocks.index(min(starting_blocks[1:]))
     starting_blocks[index] += starting_blocks[0]
     starting_blocks = starting_blocks[1:]
@@ -154,11 +155,11 @@ def find_heats_time(_runners, _heats, _nations, _z):
         elif _z > 0:
             print('Starting times: Solution found with correction factor = %i' % _z)
         for _h in range(1, _heats + 1):
-                for _r in _runners:
-                    for _t in range(runners_per_heat[_h - 1]):
-                        if match[_r, _h, _t].solution_value() == 1:
-                            _r.Heat = _h
-                            _r.Time = _t
+            for _r in _runners:
+                for _t in range(runners_per_heat[_h - 1]):
+                    if match[_r, _h, _t].solution_value() == 1:
+                        _r.Heat = _h
+                        _r.Time = _t
     if sol == solver.OPTIMAL:
         txt = 'OPTIMAL'
     else:
@@ -211,12 +212,16 @@ print('We have %i entries.' % len(runners))
 for r in runners:
     r.find_rank(runners)
 
+print('Optimizer is running...')
+
 z = 0
 while True:
     solution, optimal_result = find_heats_time(runners, heats, nations, z)
     if optimal_result == 'OPTIMAL':
         break
     z += 1
+
+print('Making startlists.xlxsx')
 
 # sort participants based on heat, starttimes
 runners = sorted(runners, key=lambda x: (x.Heat, x.Time))
@@ -238,7 +243,7 @@ startlist_sheet.write(row, col+7, 'ID')
 startlist_sheet.write(row, col+8, 'StartGrp')
 row = 1
 for r in runners:
-    print(r.Heat, r.Time, r, r.FED, r.Rank, r.ID, sep =";")
+    print(r.Heat, r.Time, r, r.FED, r.Rank, r.ID, sep=";")
     startlist_sheet.write(row, col, r.Heat)
     startlist_sheet.write(row, col+1, r.Time)
     startlist_sheet.write(row, col+2, r.Firstname)
@@ -257,37 +262,30 @@ elapsed = timeit.default_timer() - start_time
 print()
 print('Calculation time: %s seconds.' % round(elapsed, 3))
 
-
-exit()
-
 #
 # Verification
 #
 
 dfver = pd.DataFrame([vars(r) for r in runners])
-#print("Number of runners per federation")
-#print(dfver.groupby('FED').count()[['ID']])
 
 print("******************")
 print("Number of runners per federation & heat")
-print(dfver.groupby(['FED','Heat']).count()[['ID']])
+print(dfver.groupby(['FED', 'Heat']).count()[['ID']])
 
 
 print("******************")
 print("Number of runners per federation & heat - min, max and diff")
 
-runnersperheat = dfver.groupby(['FED','Heat']).count()[['ID']]
+runnersperheat = dfver.groupby(['FED', 'Heat']).count()[['ID']]
 
 t = runnersperheat.assign(ID=runnersperheat.ID.abs())\
     .groupby('FED')\
-    .ID.agg([('Min','min'),('Max','max')])\
+    .ID.agg([('Min', 'min'), ('Max', 'max')])\
     .add_prefix('Count')
 
-t['Diff'] = t.apply ( lambda row: row.CountMax-row.CountMin, axis=1)
+t['Diff'] = t.apply(lambda row: row.CountMax-row.CountMin, axis=1)
 print(t)
 
-
 print("******************")
-print("Average ranking points")
-rp = dfver.groupby('Heat').mean()[['RankingPoints']]
-print (rp)
+print("Average ranking per heat")
+print(dfver.groupby(['Heat']).mean(numeric_only=True)[['RankingPoints']])
