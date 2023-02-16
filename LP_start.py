@@ -79,6 +79,10 @@ def find_heats_time(_runners, _heats, _nations, _z):
             if _r.Rank == rank:
                 print('%s to heat %i.' % (_r, 1+random_runners.index(rank)))
 
+    print()
+    print('...Optimizer is running...Please wait...')
+    print()
+
     # [ START create variables ]
     match = {}
     for _r in _runners:
@@ -176,7 +180,7 @@ def find_heats_time(_runners, _heats, _nations, _z):
 # ###program starts here### #
 
 print('########################################################')
-print('#####    STARTLISTS TOOL with LINEAR PROGGRAMMING ######')
+print('#####    STARTLISTS TOOL with LINEAR PROGRAMMING ######')
 print('########################################################')
 print()
 
@@ -218,6 +222,13 @@ print('Startgroup Validation')
 print()
 startgrouperror = False
 
+# check unexpected start group entries
+unexpected = [r.StartGrp for r in runners if r.StartGrp not in [0, 1, 2, 3]]
+if len(unexpected) > 0:
+    startgrouperror = True
+    print('Among startgroup entries we found following unexpected data:', end=' ')
+    print(*unexpected, sep=", ")
+
 # check on grp 0 runners
 grp0runners = len([r for r in runners if r.StartGrp == 0])
 if grp0runners > 0:
@@ -252,8 +263,6 @@ print('We have %i entries.' % len(runners))
 
 for r in runners:
     r.find_rank(runners)
-
-print('Optimizer is running...')
 
 z = 0
 while True:
