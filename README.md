@@ -23,13 +23,13 @@ Google OR Tools solver is used to find solution that meets all constraints.
 Randomness is ensured by fixing random runners to heat 1,2,3.  
 
 Usage:  
-Step 1: Update entries.xlsx  
+Step 1: Update LP_start_entries.xlsx  
 It is important that your file looks exactly the same as the example   
 
 Step 2:
 For organisers with Python knowledge I would suggest to run the Python script.  
-Other organisers can use the exe file. Exe file is not available on Github but I can share via WeTransfer.  
-In both cases the entries.xlsx file should be in same directory.
+Other organisers can use the exe file. Exe file is not available on Github but can be downloaded from IOF Website.  
+In both cases the LP_start_entries.xlsx file should be in same directory.
 
 Step 3:
 Consult the proposed startlists in startlists.xlsx  
