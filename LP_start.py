@@ -226,7 +226,7 @@ if grp0runners > 0:
 
 # check on startgroups with too many runners
 for n in nations:
-    for i in range(1, heats+1):
+    for i in range(1, 4):
         if n.groupcount[i] > 1 + (n.count-1) // heats:
             print('Too many runners from %s in startgroup %i ' % (n.FED, i))
             startgrouperror = True
