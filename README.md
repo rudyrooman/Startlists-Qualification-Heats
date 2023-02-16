@@ -7,7 +7,8 @@ Application:
 WOC, Worldcup, EOC,....
 
 
-Wat does the script do:
+What does the script do:
+0. Validate Start group choices
 1. Balance number of runners per heat
 2. Balance number of runners from one country per heat.
 3. Equal strength of heats.
