@@ -43,10 +43,10 @@ class Nation:
         nations.append(self)
 
     def countrunners(self, _runners):
-	# runners per nation
+        # runners per nation
         self.count = len([_r for _r in _runners if self.FED == _r.FED])
         # runners per nation in a startgroup
-	for _i in range(4):
+        for _i in range(4):
             self.groupcount[_i] = len([_r for _r in _runners if self.FED == _r.FED if _r.StartGrp == _i])
 
 
@@ -248,7 +248,7 @@ for n in nations:
 if startgrouperror:
     print()
     print('We strongly recommend to correct startgroups before proceeding.')
-    print('Typ "s" and enter to stop program or "p" to proceed: ')
+    print('Typ "s" and enter to stop program or "p" to proceed:', end=' ')
     answer = ''
     while answer not in ['p', 's']:
         answer = input()
