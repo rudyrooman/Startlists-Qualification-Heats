@@ -43,8 +43,10 @@ class Nation:
         nations.append(self)
 
     def countrunners(self, _runners):
+	# runners per nation
         self.count = len([_r for _r in _runners if self.FED == _r.FED])
-        for _i in range(heats+1):
+        # runners per nation in a startgroup
+	for _i in range(4):
             self.groupcount[_i] = len([_r for _r in _runners if self.FED == _r.FED if _r.StartGrp == _i])
 
 
