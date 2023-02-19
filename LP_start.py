@@ -49,6 +49,9 @@ class Nation:
         for _i in range(4):
             self.groupcount[_i] = len([_r for _r in _runners if self.FED == _r.FED if _r.StartGrp == _i])
 
+    def __str__(self):
+        return str(self.FED)
+
 
 def find_heats_time(_runners, _heats, _nations, _z):
     # solver = pywraplp.Solver('SolveAssignmentProblemMIP', pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
@@ -181,9 +184,9 @@ def find_heats_time(_runners, _heats, _nations, _z):
 
 # ###program starts here### #
 
-print('########################################################')
-print('#####    STARTLISTS TOOL with LINEAR PROGRAMMING ######')
-print('########################################################')
+print('###################################################')
+print('##### STARTLISTS TOOL with LINEAR PROGRAMMING #####')
+print('###################################################')
 print()
 
 heats = 3
@@ -211,8 +214,7 @@ for teller in range(5, sheet1.max_row + 1):
 
 # create country instances
 for r in runners:
-    countries = [nation.FED for nation in nations]
-    if r.FED not in countries:
+    if r.FED not in [nation.FED for nation in nations]:
         nation = Nation()
         nation.FED = r.FED
 
@@ -223,6 +225,7 @@ for n in nations:
 print('Startgroup Validation')
 print()
 startgrouperror = False
+# 3 startgroups being 1 = early, 2 = middle, 3 = late
 
 # check unexpected start group entries
 unexpected = [r.StartGrp for r in runners if r.StartGrp not in [0, 1, 2, 3]]
@@ -232,15 +235,15 @@ if len(unexpected) > 0:
     print(*unexpected, sep=", ")
 
 # check on grp 0 runners
-grp0runners = len([r for r in runners if r.StartGrp == 0])
-if grp0runners > 0:
+grp0runners = [r for r in runners if r.StartGrp == 0]
+if len(grp0runners) > 0:
     startgrouperror = True
-    print('Currently you have %i runners without startgroup or startgroup 0.' % grp0runners)
+    print('Currently you have %i runners without startgroup or startgroup 0.' % len(grp0runners))
 
 # check on startgroups with too many runners
 for n in nations:
     for i in range(1, 4):
-        if n.groupcount[i] > 1 + (n.count-1) // heats:
+        if n.groupcount[i] > 1 + (n.count-1) // 3:
             print('Too many runners from %s in startgroup %i ' % (n.FED, i))
             startgrouperror = True
 
