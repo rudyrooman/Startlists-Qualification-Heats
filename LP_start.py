@@ -201,8 +201,6 @@ start_time = timeit.default_timer()
 wb = op.load_workbook(filename='LP_start_entries.xlsx')
 sheet1 = wb.active
 
-last_row = len(list(sheet1.rows))
-
 # read entered runners data file
 for teller in range(5, sheet1.max_row + 1):
     # check if row would be empty and leave for loop
