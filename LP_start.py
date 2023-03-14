@@ -202,10 +202,8 @@ wb = op.load_workbook(filename='LP_start_entries.xlsx')
 sheet1 = wb.active
 
 # read entered runners data file
-for teller in range(5, sheet1.max_row + 1):
-    # check if row would be empty and leave for loop
-    if not sheet1.cell(row=teller, column=1).value:
-        break
+teller = 5
+while sheet1.cell(row=teller, column=1).value:
     # read a row
     runner = Runner()
     runner.ID = sheet1.cell(row=teller, column=1).value
@@ -214,6 +212,7 @@ for teller in range(5, sheet1.max_row + 1):
     runner.Firstname = sheet1.cell(row=teller, column=4).value
     runner.StartGrp = sheet1.cell(row=teller, column=5).value
     runner.RankingPoints = sheet1.cell(row=teller, column=6).value
+    teller += 1
 
 # create country instances
 for r in runners:
