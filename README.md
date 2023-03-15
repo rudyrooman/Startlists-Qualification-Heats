@@ -28,7 +28,8 @@ It is important that your file looks exactly the same as the example
 
 Step 2:
 For organisers with Python knowledge I would suggest to run the Python script.  
-Other organisers can use the exe file. Exe file is not available on Github but can be downloaded from IOF Website.  
+Other organisers can use the exe file. Exe file is not available on Github but can be downloaded from IOF Website.
+(https://orienteering.sport/orienteering/internal/event-organising/plan-and-organise-an-iof-event/ )
 In both cases the LP_start_entries.xlsx file should be in same directory.
 
 Step 3:
