@@ -7,7 +7,7 @@ Application:
 WOC, Worldcup, EOC,....
 
 
-What does the script do:    
+What are we looking for:    
 1. Balance number of runners per heat
 2. Balance number of runners from one country per heat.
 3. Equal strength of heats.
