@@ -28,9 +28,6 @@ class Runner:
         self.Time = 0
         runners.append(self)
 
-    def find_rank(self, _runners):
-        self.Rank = 1 + _runners.index(self)
-
     def __str__(self):
         return str(self.Firstname + self.Surname)
 
@@ -63,8 +60,6 @@ def find_heats_time(_runners, _heats, _nations, _z):
     runners_per_heat = [base for _h in range(1, _heats + 1)]
     for c in range(len(_runners) - base * _heats):
         runners_per_heat[c] += 1
-    print('runners per heat: %s' % runners_per_heat)
-    print()
 
     # startingblocks given by teammanagers ( 0 = no preference, 1 = early, 2 mid section, 3 =late)
     # count runners per starting block
@@ -73,16 +68,9 @@ def find_heats_time(_runners, _heats, _nations, _z):
     index = starting_blocks.index(min(starting_blocks[1:]))
     starting_blocks[index] += starting_blocks[0]
     starting_blocks = starting_blocks[1:]
-    print('runners per starting block: %s' % starting_blocks)
-    print()
 
-    # define random runners to be fixed to heats
-    random_runners = sample(range(1, len(_runners)), _heats)
-    print('Following runners are fixed to a heat to ensure random startlists.')
-    for rank in random_runners:
-        for _r in runners:
-            if _r.Rank == rank:
-                print('%s to heat %i.' % (_r, 1+random_runners.index(rank)))
+    # choose random runners to be fixed to heats
+    random_runners = sample(_runners, _heats)
 
     print()
     print('...Optimizer is running...Please wait...')
@@ -91,8 +79,8 @@ def find_heats_time(_runners, _heats, _nations, _z):
     # [ START create variables ]
     match = {}
     for _r in _runners:
-        for _h in range(1, _heats+1):
-            for _t in range(runners_per_heat[_h-1]):
+        for _h in range(1, _heats + 1):
+            for _t in range(runners_per_heat[_h - 1]):
                 match[_r, _h, _t] = solver.BoolVar('match[%s,%s,%s]' % (_r, _h, _t))
 
     # [ END create variables ]
@@ -102,31 +90,33 @@ def find_heats_time(_runners, _heats, _nations, _z):
     # Each runner is assigned to exactly 1 heat / time combination
     for _r in _runners:
         solver.Add(solver.Sum([match[_r, _h, _t] for _h in range(1, _heats + 1)
-                               for _t in range(runners_per_heat[_h-1])]) == 1)
+                               for _t in range(runners_per_heat[_h - 1])]) == 1)
 
     # each heat / time combination is assigned to exactly 1 runner
     for _h in range(1, _heats + 1):
-        for _t in range(runners_per_heat[_h-1]):
+        for _t in range(runners_per_heat[_h - 1]):
             solver.Add(solver.Sum([match[_r, _h, _t] for _r in _runners]) == 1)
 
     # balance number of runners from 1 country to a heat
     for _n in _nations:
         for _h in range(1, _heats + 1):
-            solver.Add(solver.Sum([match[_r, _h, _t] for _t in range(runners_per_heat[_h-1]) for _r in _runners if _r.FED == _n.FED])
-                       <= (1 + (_n.count-1) // _heats))
-            solver.Add(solver.Sum([match[_r, _h, _t] for _t in range(runners_per_heat[_h-1]) for _r in _runners if _r.FED == _n.FED])
+            solver.Add(solver.Sum(
+                [match[_r, _h, _t] for _t in range(runners_per_heat[_h - 1]) for _r in _runners if _r.FED == _n.FED])
+                       <= (1 + (_n.count - 1) // _heats))
+            solver.Add(solver.Sum(
+                [match[_r, _h, _t] for _t in range(runners_per_heat[_h - 1]) for _r in _runners if _r.FED == _n.FED])
                        >= (_n.count // _heats))
 
-    # spreading runners 1,2,3 over different heats
-    for _r1 in runners:
-        if (_r1.Rank % _heats) == 1:
-            for _r2 in runners:
-                if _r2.Rank == _r1.Rank + 1:
-                    for _r3 in runners:
-                        if _r3.Rank == _r1.Rank + 2:
-                            for _h in range(1, _heats + 1):
-                                solver.Add(solver.Sum([match[_r1, _h, _t]+match[_r2, _h, _t] + match[_r3, _h, _t]
-                                                       for _t in range(runners_per_heat[_h-1])]) <= 1)
+    # spreading runners with rank 1,2,3 and thus position 0,1,2 in sorted runners over different heats
+    # spreading runners with rank 4,5,6 and thus position 3,4,5 in sorted runners over different heats
+    # ...
+    for position in range(0, (len(_runners) // _heats) * _heats, 3):
+        _r1 = _runners[position]  # position starts from 0
+        _r2 = _runners[position+1]
+        _r3 = _runners[position+2]
+        for _h in range(1, _heats + 1):
+            solver.Add(solver.Sum([match[_r1, _h, _t] + match[_r2, _h, _t] + match[_r3, _h, _t]
+                                   for _t in range(runners_per_heat[_h - 1])]) <= 1)
 
     # consecutive times not from same nation
     for _r1 in _runners:
@@ -134,40 +124,45 @@ def find_heats_time(_runners, _heats, _nations, _z):
             if _r1.FED == _r2.FED and _r1 != _r2:
                 for _h in range(1, _heats + 1):
                     for _t in range(runners_per_heat[_h - 1] - 1):
-                        solver.Add(match[_r1, _h, _t] + match[_r2, _h, _t+1] <= 1)
+                        solver.Add(match[_r1, _h, _t] + match[_r2, _h, _t + 1] <= 1)
 
     # comply with startgroup requests
     # a parameter _z for relaxation is available but not used
     for _r in _runners:
         if _r.StartGrp > 1:
             solver.Add(solver.Sum([match[_r, _h, _t] * _t for _h in range(1, _heats + 1)
-                                   for _t in range(runners_per_heat[_h-1])]) >=
-                       ((sum(starting_blocks[0:_r.StartGrp-1]) - 1) // _heats - _z))
+                                   for _t in range(runners_per_heat[_h - 1])]) >=
+                       ((sum(starting_blocks[0:_r.StartGrp - 1]) - 1) // _heats - _z))
         if _r.StartGrp < _heats and _r.StartGrp != 0:
             solver.Add(solver.Sum([match[_r, _h, _t] * _t for _h in range(1, _heats + 1)
                                    for _t in range(runners_per_heat[_h - 1])]) <=
                        ((sum(starting_blocks[0:_r.StartGrp]) - 1) // _heats + _z))
 
     # fix random runners to specific heats and time
-    for _h in range(1, _heats + 1):
-        for _r in _runners:
-            if _r.Rank == random_runners[_h-1]:
-                solver.Add(solver.Sum([match[_r, _h, _t] for _t in range(runners_per_heat[_h - 1])]) == 1)
-    
+    for _h, _r in enumerate(random_runners, start=1):
+        solver.Add(solver.Sum([match[_r, _h, _t] for _t in range(runners_per_heat[_h - 1])]) == 1)
+
     # [ END Constraints ]
-
-    # [ START Objectives ]
-
-    # [ END Objectives ]
 
     sol = solver.Solve()
 
     if sol == solver.OPTIMAL:
+        # resultaten tonen
         print()
         if _z == 0:
             print('Starting times: Optimal solution found')
         elif _z > 0:
             print('Starting times: Solution found with correction factor = %i' % _z)
+
+        print()
+        print('runners per heat: %s' % runners_per_heat)
+        print()
+        print('runners per starting block: %s' % starting_blocks)
+        print()
+        print('Following runners are fixed to a heat to ensure random startlists.')
+        for _c, _r in enumerate(random_runners, start=1):
+            print('%s to heat %i.' % (_r, _c))
+        print()
         for _h in range(1, _heats + 1):
             for _r in _runners:
                 for _t in range(runners_per_heat[_h - 1]):
@@ -245,7 +240,7 @@ if len(grp0runners) > 0:
 # check on startgroups with too many runners
 for n in nations:
     for i in range(1, 4):
-        if n.groupcount[i] > 1 + (n.count-1) // 3:
+        if n.groupcount[i] > 1 + (n.count - 1) // 3:
             print('Too many runners from %s in startgroup %i ' % (n.FED, i))
             startgrouperror = True
 
@@ -268,8 +263,9 @@ runners = sorted(runners, key=lambda x: x.RankingPoints, reverse=True)
 
 print('We have %i entries.' % len(runners))
 
-for r in runners:
-    r.find_rank(runners)
+# save rank of sorted runners
+for teller, r in enumerate(runners, start=1):
+    r.Rank = teller
 
 z = 0
 while True:
@@ -290,26 +286,26 @@ startlist_sheet = workbook.add_worksheet('startlist')
 row = 0
 col = 0
 startlist_sheet.write(row, col, 'Heat')
-startlist_sheet.write(row, col+1, 'Time')
-startlist_sheet.write(row, col+2, 'Firstname')
-startlist_sheet.write(row, col+3, 'Surname')
-startlist_sheet.write(row, col+4, 'FED')
-startlist_sheet.write(row, col+5, 'Rank')
-startlist_sheet.write(row, col+6, 'RankingPoints')
-startlist_sheet.write(row, col+7, 'ID')
-startlist_sheet.write(row, col+8, 'StartGrp')
+startlist_sheet.write(row, col + 1, 'Time')
+startlist_sheet.write(row, col + 2, 'Firstname')
+startlist_sheet.write(row, col + 3, 'Surname')
+startlist_sheet.write(row, col + 4, 'FED')
+startlist_sheet.write(row, col + 5, 'Rank')
+startlist_sheet.write(row, col + 6, 'RankingPoints')
+startlist_sheet.write(row, col + 7, 'ID')
+startlist_sheet.write(row, col + 8, 'StartGrp')
 row = 1
 for r in runners:
     print(r.Heat, r.Time, r, r.FED, r.Rank, r.ID, sep=";")
     startlist_sheet.write(row, col, r.Heat)
-    startlist_sheet.write(row, col+1, r.Time)
-    startlist_sheet.write(row, col+2, r.Firstname)
-    startlist_sheet.write(row, col+3, r.Surname)
-    startlist_sheet.write(row, col+4, r.FED)
-    startlist_sheet.write(row, col+5, r.Rank)
-    startlist_sheet.write(row, col+6, r.RankingPoints)
-    startlist_sheet.write(row, col+7, r.ID)
-    startlist_sheet.write(row, col+8, r.StartGrp)
+    startlist_sheet.write(row, col + 1, r.Time)
+    startlist_sheet.write(row, col + 2, r.Firstname)
+    startlist_sheet.write(row, col + 3, r.Surname)
+    startlist_sheet.write(row, col + 4, r.FED)
+    startlist_sheet.write(row, col + 5, r.Rank)
+    startlist_sheet.write(row, col + 6, r.RankingPoints)
+    startlist_sheet.write(row, col + 7, r.ID)
+    startlist_sheet.write(row, col + 8, r.StartGrp)
     row += 1
 
 workbook.close()
@@ -329,23 +325,21 @@ print("******************")
 print("Number of runners per federation & startgroup")
 print(dfver.groupby(['FED', 'StartGrp']).count()[['ID']])
 
-
 print("******************")
 print("Number of runners per federation & heat")
 print(dfver.groupby(['FED', 'Heat']).count()[['ID']])
-
 
 print("******************")
 print("Number of runners per federation & heat - min, max and diff")
 
 runnersperheat = dfver.groupby(['FED', 'Heat']).count()[['ID']]
 
-t = runnersperheat.assign(ID=runnersperheat.ID.abs())\
-    .groupby('FED')\
-    .ID.agg([('Min', 'min'), ('Max', 'max')])\
+t = runnersperheat.assign(ID=runnersperheat.ID.abs()) \
+    .groupby('FED') \
+    .ID.agg([('Min', 'min'), ('Max', 'max')]) \
     .add_prefix('Count')
 
-t['Diff'] = t.apply(lambda row: row.CountMax-row.CountMin, axis=1)
+t['Diff'] = t.apply(lambda rij: rij.CountMax - rij.CountMin, axis=1)
 print(t)
 
 print("******************")
