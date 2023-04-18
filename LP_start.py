@@ -35,16 +35,18 @@ class Runner:
 class Nation:
     def __init__(self):
         self.FED = ''
+        self.runners = []
         self.count = 0
         self.groupcount = [0, 0, 0, 0]
         nations.append(self)
 
     def countrunners(self, _runners):
         # runners per nation
-        self.count = len([_r for _r in _runners if self.FED == _r.FED])
+        self.runners = [_r for _r in _runners if self.FED == _r.FED]
+        self.count = len(self.runners)
         # runners per nation in a startgroup
         for _i in range(4):
-            self.groupcount[_i] = len([_r for _r in _runners if self.FED == _r.FED if _r.StartGrp == _i])
+            self.groupcount[_i] = len([_r for _r in self.runners if _r.StartGrp == _i])
 
     def __str__(self):
         return str(self.FED)
@@ -101,10 +103,10 @@ def find_heats_time(_runners, _heats, _nations, _z):
     for _n in _nations:
         for _h in range(1, _heats + 1):
             solver.Add(solver.Sum(
-                [match[_r, _h, _t] for _t in range(runners_per_heat[_h - 1]) for _r in _runners if _r.FED == _n.FED])
+                [match[_r, _h, _t] for _t in range(runners_per_heat[_h - 1]) for _r in _n.runners])
                        <= (1 + (_n.count - 1) // _heats))
             solver.Add(solver.Sum(
-                [match[_r, _h, _t] for _t in range(runners_per_heat[_h - 1]) for _r in _runners if _r.FED == _n.FED])
+                [match[_r, _h, _t] for _t in range(runners_per_heat[_h - 1]) for _r in _n.runners])
                        >= (_n.count // _heats))
 
     # spreading runners with rank 1,2,3 and thus position 0,1,2 in sorted runners over different heats
@@ -119,15 +121,16 @@ def find_heats_time(_runners, _heats, _nations, _z):
                                    for _t in range(runners_per_heat[_h - 1])]) <= 1)
 
     # consecutive times not from same nation
-    for _r1 in _runners:
-        for _r2 in _runners:
-            if _r1.FED == _r2.FED and _r1 != _r2:
-                for _h in range(1, _heats + 1):
-                    for _t in range(runners_per_heat[_h - 1] - 1):
-                        solver.Add(match[_r1, _h, _t] + match[_r2, _h, _t + 1] <= 1)
+    for _n in _nations:
+        for _r1 in _n.runners:
+            for _r2 in _n.runners:
+                if _r1 != _r2:
+                    for _h in range(1, _heats + 1):
+                        for _t in range(runners_per_heat[_h - 1] - 1):
+                            solver.Add(match[_r1, _h, _t] + match[_r2, _h, _t + 1] <= 1)
 
     # comply with startgroup requests
-    # a parameter _z for relaxation is available but not used
+    # a parameter _z for relaxation is available
     for _r in _runners:
         if _r.StartGrp > 1:
             solver.Add(solver.Sum([match[_r, _h, _t] * _t for _h in range(1, _heats + 1)
