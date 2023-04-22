@@ -7,12 +7,14 @@
 # from __future__ import print_function
 from __future__ import unicode_literals
 from ortools.linear_solver import pywraplp
-import timeit
-import xlsxwriter
+from timeit import default_timer
+from xlsxwriter import Workbook
 from random import sample
-import openpyxl as op
-import pandas as pd
-import sys
+from openpyxl import load_workbook
+from pandas import DataFrame
+from sys import exit
+from itertools import combinations
+from numpy import array_split
 
 
 class Runner:
@@ -57,11 +59,8 @@ def find_heats_time(_runners, _heats, _nations, _z):
     solver = pywraplp.Solver('SolveAssignmentProblemMIP', pywraplp.Solver.SCIP_MIXED_INTEGER_PROGRAMMING)
     # solver = pywraplp.Solver('SolveAssignmentLinearProgramming', pywraplp.Solver.GLOP_LINEAR_PROGRAMMING)
 
-    # define runners per heat
-    base = len(_runners) // _heats
-    runners_per_heat = [base for _h in range(1, _heats + 1)]
-    for c in range(len(_runners) - base * _heats):
-        runners_per_heat[c] += 1
+    # define runners per heat using numpy array_split ( 10 runners over 3 heats = 4,3,3 )
+    runners_per_heat = [len(it) for it in array_split(range(len(_runners)), _heats)]
 
     # startingblocks given by teammanagers ( 0 = no preference, 1 = early, 2 mid section, 3 =late)
     # count runners per starting block
@@ -70,9 +69,6 @@ def find_heats_time(_runners, _heats, _nations, _z):
     index = starting_blocks.index(min(starting_blocks[1:]))
     starting_blocks[index] += starting_blocks[0]
     starting_blocks = starting_blocks[1:]
-
-    # choose random runners to be fixed to heats
-    random_runners = sample(_runners, _heats)
 
     print()
     print('...Optimizer is running...Please wait...')
@@ -112,22 +108,20 @@ def find_heats_time(_runners, _heats, _nations, _z):
     # spreading runners with rank 1,2,3 and thus position 0,1,2 in sorted runners over different heats
     # spreading runners with rank 4,5,6 and thus position 3,4,5 in sorted runners over different heats
     # ...
-    for position in range(0, (len(_runners) // _heats) * _heats, 3):
-        _r1 = _runners[position]  # position starts from 0
-        _r2 = _runners[position+1]
-        _r3 = _runners[position+2]
+    # remove last runners to ensure all group have size = nr of heats
+    _runners2 = _runners[:(len(_runners) // _heats) * _heats]
+    # divide in groups
+    for group in [list(it) for it in array_split(_runners2, len(_runners) // _heats)]:
         for _h in range(1, _heats + 1):
-            solver.Add(solver.Sum([match[_r1, _h, _t] + match[_r2, _h, _t] + match[_r3, _h, _t]
-                                   for _t in range(runners_per_heat[_h - 1])]) <= 1)
+            solver.Add(solver.Sum([match[_r, _h, _t] for _r in group for _t in range(runners_per_heat[_h - 1])]) <= 1)
 
     # consecutive times not from same nation
     for _n in _nations:
-        for _r1 in _n.runners:
-            for _r2 in _n.runners:
-                if _r1 != _r2:
-                    for _h in range(1, _heats + 1):
-                        for _t in range(runners_per_heat[_h - 1] - 1):
-                            solver.Add(match[_r1, _h, _t] + match[_r2, _h, _t + 1] <= 1)
+        # all combinations of 2 different runners for that nation
+        for _r1, _r2 in combinations(_n.runners, 2):
+            for _h in range(1, _heats + 1):
+                for _t in range(runners_per_heat[_h - 1] - 1):
+                    solver.Add(match[_r1, _h, _t] + match[_r2, _h, _t + 1] <= 1)
 
     # comply with startgroup requests
     # a parameter _z for relaxation is available
@@ -141,7 +135,8 @@ def find_heats_time(_runners, _heats, _nations, _z):
                                    for _t in range(runners_per_heat[_h - 1])]) <=
                        ((sum(starting_blocks[0:_r.StartGrp]) - 1) // _heats + _z))
 
-    # fix random runners to specific heats and time
+    # choose random runners and fix to specific heats and time
+    random_runners = sample(_runners, _heats)
     for _h, _r in enumerate(random_runners, start=1):
         solver.Add(solver.Sum([match[_r, _h, _t] for _t in range(runners_per_heat[_h - 1])]) == 1)
 
@@ -193,16 +188,16 @@ heats = 3
 runners = []
 nations = []
 
-start_time = timeit.default_timer()
+start_time = default_timer()
 
 # read entries
-wb = op.load_workbook(filename='LP_start_entries.xlsx')
+wb = load_workbook(filename='LP_start_entries.xlsx')
 sheet1 = wb.active
 
 # read entered runners data file
 teller = 5
 while sheet1.cell(row=teller, column=1).value:
-    # read a row
+    # read a row and create runner instances
     runner = Runner()
     runner.ID = sheet1.cell(row=teller, column=1).value
     runner.FED = sheet1.cell(row=teller, column=2).value
@@ -212,11 +207,10 @@ while sheet1.cell(row=teller, column=1).value:
     runner.RankingPoints = sheet1.cell(row=teller, column=6).value
     teller += 1
 
-# create country instances
-for r in runners:
-    if r.FED not in [nation.FED for nation in nations]:
-        nation = Nation()
-        nation.FED = r.FED
+# remove doubles from list of countrynames and create country instances
+for country in list(dict.fromkeys([r.FED for r in runners])):
+    n = Nation()
+    n.FED = country
 
 # count runners per nation and startgrps
 for n in nations:
@@ -256,7 +250,7 @@ if startgrouperror:
     while answer not in ['p', 's']:
         answer = input()
     if answer == 's':
-        sys.exit()
+        exit()
 else:
     print('Startgroup Validation completed without comments.')
     print()
@@ -270,6 +264,7 @@ print('We have %i entries.' % len(runners))
 for teller, r in enumerate(runners, start=1):
     r.Rank = teller
 
+# optimise
 z = 0
 while True:
     solution, optimal_result = find_heats_time(runners, heats, nations, z)
@@ -283,7 +278,7 @@ print('Making startlists.xlxsx')
 runners = sorted(runners, key=lambda x: (x.Heat, x.Time))
 
 # print en export to Excel
-workbook = xlsxwriter.Workbook('startlists.xlsx')
+workbook = Workbook('startlists.xlsx')
 # engineer data from Clicksoftware
 startlist_sheet = workbook.add_worksheet('startlist')
 row = 0
@@ -313,7 +308,7 @@ for r in runners:
 
 workbook.close()
 
-elapsed = timeit.default_timer() - start_time
+elapsed = default_timer() - start_time
 
 print()
 print('Calculation time: %s seconds.' % round(elapsed, 3))
@@ -322,7 +317,7 @@ print('Calculation time: %s seconds.' % round(elapsed, 3))
 # Verification
 #
 
-dfver = pd.DataFrame([vars(r) for r in runners])
+dfver = DataFrame([vars(r) for r in runners])
 
 print("******************")
 print("Number of runners per federation & startgroup")
