@@ -37,5 +37,6 @@ Consult the proposed startlists in startlists.xlsx
 If you would not like the result, just run the program again. ( do not forget to close startlists.xlsx before next attempt) 
 
 Notes: 
-* I compiled to *.exe with Pyinstaller.  
+* I compiled to *.exe with auto-py-to-exe.  
 * Do not hesitate to contact me for support. 
+* standard = 3 heats but works also for different number of heats
