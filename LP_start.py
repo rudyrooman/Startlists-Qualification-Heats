@@ -105,15 +105,15 @@ def find_heats_time(_runners, _heats, _nations, _z):
                 [match[_r, _h, _t] for _t in range(runners_per_heat[_h - 1]) for _r in _n.runners])
                        >= (_n.count // _heats))
 
-    # spreading runners with rank 1,2,3 and thus position 0,1,2 in sorted runners over different heats
-    # spreading runners with rank 4,5,6 and thus position 3,4,5 in sorted runners over different heats
+    # spreading runners with rank 1,2,3 over different heats
+    # spreading runners with rank 4,5,6 over different heats
     # ...
     # remove last runners to ensure all group have size = nr of heats
     _runners2 = _runners[:(len(_runners) // _heats) * _heats]
     # divide in groups
     for group in [list(it) for it in array_split(_runners2, len(_runners) // _heats)]:
         for _h in range(1, _heats + 1):
-            solver.Add(solver.Sum([match[_r, _h, _t] for _r in group for _t in range(runners_per_heat[_h - 1])]) <= 1)
+            solver.Add(solver.Sum([match[_r, _h, _t] for _r in group for _t in range(runners_per_heat[_h - 1])]) == 1)
 
     # consecutive times not from same nation
     for _n in _nations:
@@ -343,3 +343,4 @@ print(t)
 print("******************")
 print("Average ranking per heat")
 print(dfver.groupby(['Heat']).mean(numeric_only=True)[['RankingPoints']])
+
